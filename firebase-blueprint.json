@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Student profile including preferences and progress.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "selectedClass": { "type": "string", "enum": ["9th", "10th", "11th", "12th"] },
+        "selectedBoard": { "type": "string", "enum": ["CBSE", "State Board", "ICSE"] },
+        "favorites": { "type": "array", "description": "List of content IDs saved by user" },
+        "recentlyViewed": { "type": "array", "description": "Last 10 content pieces viewed" },
+        "progress": { "type": "object", "description": "Chapter-wise completion status" },
+        "isAdmin": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "email"]
+    },
+    "Content": {
+      "title": "Educational Content",
+      "description": "General schema for papers, notes, and questions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["pyq", "sample_paper", "note", "important_question", "mcq"] },
+        "class": { "type": "string" },
+        "board": { "type": "string" },
+        "subject": { "type": "string" },
+        "chapter": { "type": "string" },
+        "year": { "type": "integer" },
+        "fileUrl": { "type": "string", "description": "URL to PDF in Cloud Storage" },
+        "contentBody": { "type": "string", "description": "Text content or Markdown for notes/questions" },
+        "options": { "type": "array", "description": "For MCQs only" },
+        "correctAnswer": { "type": "string" },
+        "explanation": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "class", "subject"]
+    },
+    "Quiz": {
+      "title": "Daily Quiz",
+      "description": "Scheduled daily MCQs for students.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "questions": { "type": "array" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile and progress data"
+    },
+    "/content": {
+      "schema": "Content",
+      "description": "The main repository for study materials"
+    },
+    "/dailyQuizzes/{date}": {
+      "schema": "Quiz",
+      "description": "Daily MCQ challenges"
+    }
+  }
+}

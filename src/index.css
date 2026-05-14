@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-500: #2563eb;
+  --color-brand-600: #1d4ed8;
+  --color-brand-700: #1e4ed8;
+  --color-brand-900: #1e3a8a;
+
+  --color-vibrant-pink-bg: #fdf2f8;
+  --color-vibrant-pink-text: #db2777;
+  --color-vibrant-purple-bg: #faf5ff;
+  --color-vibrant-purple-text: #9333ea;
+  --color-vibrant-cyan-bg: #ecfeff;
+  --color-vibrant-cyan-text: #0891b2;
+  --color-vibrant-emerald-bg: #ecfdf5;
+  --color-vibrant-emerald-text: #059669;
+  --color-vibrant-orange-bg: #fff7ed;
+  --color-vibrant-orange-text: #ea580c;
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-slate-100 text-slate-800 antialiased;
+  }
+}
+
+.mobile-container {
+  @apply min-h-screen max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden flex flex-col;
+  border-left: 1px solid theme(colors.slate.200);
+  border-right: 1px solid theme(colors.slate.200);
+}
+
+.glass-card {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm;
+}
+
+.page-transition-enter {
+  @apply opacity-0 translate-y-4;
+}
+
+.page-transition-enter-active {
+  @apply opacity-100 translate-y-0 transition-all duration-300 ease-out;
+}
+
+.admin-badge {
+  @apply px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-600 text-white rounded-full;
+}

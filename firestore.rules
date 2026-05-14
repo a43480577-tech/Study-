@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- User Profile Rules ---
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.keys().hasAll(['userId', 'email']) &&
+               data.userId == request.auth.uid &&
+               data.email is string && data.email.size() <= 256 &&
+               (!('isAdmin' in data) || data.isAdmin == false); // Client cannot set admin
+      }
+
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin(); // Prevent scraping
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && 
+                    incoming().diff(existing()).affectedKeys().hasOnly([
+                      'selectedClass', 'selectedBoard', 'favorites', 'recentlyViewed', 'progress'
+                    ]);
+    }
+
+    // --- Content Rules ---
+    match /content/{contentId} {
+      function isValidContent(data) {
+        return data.keys().hasAll(['title', 'type', 'class', 'subject']) &&
+               data.title is string && data.title.size() <= 200 &&
+               data.type in ['pyq', 'sample_paper', 'note', 'important_question', 'mcq'] &&
+               data.class in ['9th', '10th', '11th', '12th'] &&
+               (!('fileUrl' in data) || (data.fileUrl is string && data.fileUrl.size() <= 1024));
+      }
+
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && isValidContent(incoming()) && isValidId(contentId);
+    }
+
+    // --- Daily Quiz Rules ---
+    match /dailyQuizzes/{dateId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && isValidId(dateId);
+    }
+
+    // --- Admins Tracking (System Only) ---
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only manageable via Google Cloud Console
+    }
+  }
+}
